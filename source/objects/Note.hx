@@ -1,5 +1,6 @@
 package objects;
 
+import flixel.math.FlxPoint;
 import data.ClientPrefs;
 import data.Paths;
 import flash.display.BitmapData;
@@ -12,6 +13,7 @@ import shaders.ColorSwap;
 import song.Conductor;
 import states.editors.ChartingState;
 import states.game.PlayState;
+import math.Vector3;
 
 using StringTools;
 
@@ -25,6 +27,16 @@ typedef EventNote =
 
 class Note extends FlxSprite
 {
+	public var vec3Cache:Vector3 = new Vector3(); // for vector3 operations in modchart code
+	public var defScale:FlxPoint = FlxPoint.get(); // for modcharts to keep the scaling
+
+	override function destroy()
+	{
+		defScale.put();
+		super.destroy();
+	}	
+	public var mAngle:Float = 0;
+	public var bAngle:Float = 0;
 	public var extraData:Map<String, Dynamic> = [];
 
 	public var strumTime:Float = 0;
@@ -101,11 +113,13 @@ class Note extends FlxSprite
 
 	public var hitsoundDisabled:Bool = false;
 
+	public var typeOffsetX:Float = 0; // used to offset notes, mainly for note types. use in place of offset.x and offset.y when offsetting notetypes
+	public var typeOffsetY:Float = 0;
+
 	private function set_multSpeed(value:Float):Float
 	{
 		resizeByRatio(value / multSpeed);
 		multSpeed = value;
-		// trace('fuck cock');
 		return value;
 	}
 
@@ -115,6 +129,7 @@ class Note extends FlxSprite
 		{
 			scale.y *= ratio;
 			updateHitbox();
+			defScale.copyFrom(scale);
 		}
 	}
 
@@ -252,7 +267,7 @@ class Note extends FlxSprite
 					prevNote.scale.y *= (6 / height); // Auto adjust note size
 				}
 				prevNote.updateHitbox();
-				// prevNote.setGraphicSize();
+				prevNote.defScale.copyFrom(prevNote.scale);
 			}
 
 			if (PlayState.isPixelStage)
@@ -265,6 +280,7 @@ class Note extends FlxSprite
 		{
 			earlyHitMult = 1;
 		}
+		defScale.copyFrom(scale);
 		x += offsetX;
 	}
 
@@ -348,6 +364,7 @@ class Note extends FlxSprite
 		{
 			scale.y = lastScaleY;
 		}
+		defScale.copyFrom(scale);
 		updateHitbox();
 
 		if (animName != null)

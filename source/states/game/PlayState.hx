@@ -68,6 +68,7 @@ import states.game.*;
 import states.menus.*;
 import states.substates.*;
 import util.*;
+import modchart.*;
 
 using StringTools;
 
@@ -88,6 +89,8 @@ import vlc.MP4Handler;
 
 class PlayState extends MusicBeatState
 {
+	public var modManager:ModManager;
+	
 	public static var STRUM_X = 42;
 	public static var STRUM_X_MIDDLESCROLL = -278;
 
@@ -527,8 +530,7 @@ class PlayState extends MusicBeatState
 		Conductor.songPosition = -5000 / Conductor.songPosition;
 
 		strumLine = new FlxSprite(ClientPrefs.middleScroll ? STRUM_X_MIDDLESCROLL : STRUM_X, 50).makeGraphic(FlxG.width, 10);
-		if (ClientPrefs.downScroll)
-			strumLine.y = FlxG.height - 150;
+		//if (ClientPrefs.downScroll) strumLine.y = FlxG.height - 150;
 		strumLine.scrollFactor.set();
 
 		var showTime:Bool = (ClientPrefs.timeBarType != 'Disabled');
@@ -587,6 +589,7 @@ class PlayState extends MusicBeatState
 		playerStrums = new FlxTypedGroup<StrumNote>();
 
 		generateSong(SONG.song);
+		modManager = new ModManager(this);
 
 		camFollow = new FlxPoint();
 		camFollowPos = new FlxObject(0, 0, 1, 1);
@@ -921,6 +924,9 @@ class PlayState extends MusicBeatState
 		generateStaticArrows(0);
 		generateStaticArrows(1);
 
+		modManager.receptors = [playerStrums.members, opponentStrums.members];
+		modManager.registerDefaultModifiers();
+
 		startedCountdown = true;
 		Conductor.songPosition = -Conductor.crochet * 5;
 
@@ -1045,6 +1051,21 @@ class PlayState extends MusicBeatState
 						}
 					});
 					FlxG.sound.play(Paths.sound('introGo' + introSoundsSuffix), 0.6);
+					if(dad != null && dad.animOffsets.exists('hey')) {
+						dad.playAnim('hey', true);
+						dad.specialAnim = true;
+						dad.heyTimer = 0.6;
+					}
+					if(boyfriend != null && boyfriend.animOffsets.exists('hey')) {
+						boyfriend.playAnim('hey', true);
+						boyfriend.specialAnim = true;
+						boyfriend.heyTimer = 0.6;
+					}
+					if(gf != null && gf.animOffsets.exists('cheer')) {
+						gf.playAnim('cheer', true);
+						gf.specialAnim = true;
+						gf.heyTimer = 0.6;
+					}
 				case 4:
 			}
 
@@ -1679,11 +1700,9 @@ class PlayState extends MusicBeatState
 
 		var mult:Float = FlxMath.lerp(1, iconP1.scale.x, CoolUtil.boundTo(1 - (elapsed * 9 * playbackRate), 0, 1));
 		iconP1.scale.set(mult, mult);
-		iconP1.updateHitbox();
 
 		var mult:Float = FlxMath.lerp(1, iconP2.scale.x, CoolUtil.boundTo(1 - (elapsed * 9 * playbackRate), 0, 1));
 		iconP2.scale.set(mult, mult);
-		iconP2.updateHitbox();
 
 		var iconOffset:Int = 26;
 
@@ -1780,6 +1799,9 @@ class PlayState extends MusicBeatState
 			health = 0;
 		}
 		doDeathCheck();
+		
+		modManager.updateTimeline(curDecStep);
+		modManager.update(elapsed);
 
 		if (unspawnNotes[0] != null)
 		{
@@ -1803,6 +1825,22 @@ class PlayState extends MusicBeatState
 				unspawnNotes.splice(index, 1);
 			}
 		}
+
+		opponentStrums.forEachAlive(function(strum:StrumNote)
+			{
+				var pos = modManager.getPos(0, 0, 0, curDecBeat, strum.noteData, 1, strum, [], strum.vec3Cache);
+				modManager.updateObject(curDecBeat, strum, pos, 1);
+				strum.x = pos.x;
+				strum.y = pos.y;
+			});
+	
+			playerStrums.forEachAlive(function(strum:StrumNote)
+			{
+				var pos = modManager.getPos(0, 0, 0, curDecBeat, strum.noteData, 0, strum, [], strum.vec3Cache);
+				modManager.updateObject(curDecBeat, strum, pos, 0);
+				strum.x = pos.x;
+				strum.y = pos.y;
+			});
 
 		if (generatedMusic && !inCutscene)
 		{
@@ -1841,8 +1879,37 @@ class PlayState extends MusicBeatState
 						strumY += daNote.offsetY;
 						strumAngle += daNote.offsetAngle;
 						strumAlpha *= daNote.multAlpha;
+						var pN:Int = daNote.mustPress ? 0 : 1;
+						var pos = modManager.getPos(daNote.strumTime, modManager.getVisPos(Conductor.songPosition, daNote.strumTime, songSpeed),
+							daNote.strumTime - Conductor.songPosition, curDecBeat, daNote.noteData, pN, daNote, [], daNote.vec3Cache);
+	
+						modManager.updateObject(curDecBeat, daNote, pos, pN);
+						pos.x += daNote.offsetX;
+						pos.y += daNote.offsetY;
+						daNote.x = pos.x;
+						daNote.y = pos.y;
 
-						if (strumScroll) // Downscroll
+						if (daNote.isSustainNote)
+						{
+							var futureSongPos = Conductor.songPosition + 75;
+							var diff = daNote.strumTime - futureSongPos;
+							var vDiff = modManager.getVisPos(futureSongPos, daNote.strumTime, songSpeed);
+	
+							var nextPos = modManager.getPos(daNote.strumTime, vDiff, diff, Conductor.getStep(futureSongPos) / 4, daNote.noteData, pN, daNote, [],
+								daNote.vec3Cache);
+							nextPos.x += daNote.offsetX;
+							nextPos.y += daNote.offsetY;
+							var diffX = (nextPos.x - pos.x);
+							var diffY = (nextPos.y - pos.y);
+							var rad = Math.atan2(diffY, diffX);
+							var deg = rad * (180 / Math.PI);
+							if (deg != 0)
+								daNote.mAngle = (deg + 90);
+							else
+								daNote.mAngle = 0;
+						}
+
+						/* if (strumScroll) // Downscroll
 						{
 							// daNote.y = (strumY + 0.45 * (Conductor.songPosition - daNote.strumTime) * songSpeed);
 							daNote.distance = (0.45 * (Conductor.songPosition - daNote.strumTime) * songSpeed * daNote.multSpeed);
@@ -1886,7 +1953,7 @@ class PlayState extends MusicBeatState
 								daNote.y += (Note.swagWidth / 2) - (60.5 * (songSpeed - 1));
 								daNote.y += 27.5 * ((SONG.bpm / 100) - 1) * (songSpeed - 1);
 							}
-						}
+						} */
 
 						if (!daNote.mustPress && daNote.wasGoodHit && !daNote.hitByOpponent && !daNote.ignoreNote)
 						{
@@ -1908,7 +1975,7 @@ class PlayState extends MusicBeatState
 							}
 						}
 
-						var center:Float = strumY + Note.swagWidth / 2;
+						/* var center:Float = strumY + Note.swagWidth / 2;
 						if (strumGroup.members[daNote.noteData].sustainReduce
 							&& daNote.isSustainNote
 							&& (daNote.mustPress || !daNote.ignoreNote)
@@ -1936,7 +2003,7 @@ class PlayState extends MusicBeatState
 									daNote.clipRect = swagRect;
 								}
 							}
-						}
+						} */
 
 						// Kill extremely late notes and cause misses
 						if (Conductor.songPosition > noteKillOffset + daNote.strumTime)
@@ -3326,6 +3393,11 @@ class PlayState extends MusicBeatState
 	override function beatHit()
 	{
 		super.beatHit();
+		if (curBeat % 2 == 0)
+			{
+				FlxTween.angle(iconP1, -8, 0, Conductor.crochet * 0.002 / playbackRate, {ease: FlxEase.circOut});
+				FlxTween.angle(iconP2, 8, 0, Conductor.crochet * 0.002 / playbackRate, {ease: FlxEase.circOut});
+			}
 
 		if (lastBeatHit >= curBeat)
 		{
@@ -3339,9 +3411,6 @@ class PlayState extends MusicBeatState
 
 		iconP1.scale.set(1.2, 1.2);
 		iconP2.scale.set(1.2, 1.2);
-
-		iconP1.updateHitbox();
-		iconP2.updateHitbox();
 
 		if (gf != null
 			&& curBeat % Math.round(gfSpeed * gf.danceEveryNumBeats) == 0

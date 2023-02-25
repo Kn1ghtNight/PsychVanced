@@ -36,11 +36,11 @@ class Alphabet extends FlxSpriteGroup
 	public var instantLerp:Bool = false;
 
 	public var alignment(default, set):Alignment = LEFT;
-	public var scaleX(default, set):Float = 1;
-	public var scaleY(default, set):Float = 1;
+	public var scaleX(default, set):Float = 1.4;
+	public var scaleY(default, set):Float = 1.4;
 	public var rows:Int = 0;
 
-	public var distancePerItem:FlxPoint = new FlxPoint(20, 120);
+	public var distancePerItem:FlxPoint = new FlxPoint(40, 120);
 	public var startPosition:FlxPoint = new FlxPoint(0, 0); // for the calculations
 
 	public function new(x:Float, y:Float, text:String = "", ?bold:Bool = true)

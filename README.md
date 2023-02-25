@@ -1,25 +1,14 @@
-# Lunar's Advanced Psych Fork
+# Friday Night Funkin' - PsychVanced
 
-A bare-bones fork of psych engine designed to be soft coded in certain ways, but to be used with source code. Has support for advanced hscript integrated with FNF.
+It's Psych! But with some neat lil' things!
 
-**This fork will stay on Psych Engine V6.3 unless major features are added to future builds!**
+![](https://cdn.discordapp.com/attachments/996021377180115054/1079082454184382495/psychvanced_logo.png)
 
-**Fork will stay unofficial, and never ever will be official, due to issues relating to ShadowMario & the Owner**
+## Features
+* Andromeda Modcharting API
+* Internal Resolution Bumped to 1080p instead of 720p
+* HX HScript Support (no lua here *for now*, sorry!!!)
+* Icon bop!!!
 
-![Minecraft Steve](https://i.imgur.com/fRACgfU.png)
-
-## Current Developement Status🟡
-
-Current Version: **v0.0.2**
-
-#### New Stuff:
-- [Script Interactions](https://github.com/lunarcleint/Psych-Advanced-Hscript/wiki/Script-API-2:-Script-Examples#adding-and-getting-a-script)
-- Better Error Handling
-- [Documation](https://github.com/lunarcleint/Psych-Advanced-Hscript/wiki) (LETS GO!!)
-
-Please report any errors you get in the [Issues](https://github.com/lunarcleint/Psych-Advanced-Hscript/issues) tab!
-
-## Documenation
-
-Check out the [Wiki](https://github.com/lunarcleint/Psych-Advanced-Hscript/wiki)!
-
+## TO DO
+* [ ] Lua Support
