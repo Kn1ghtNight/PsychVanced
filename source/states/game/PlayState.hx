@@ -2856,7 +2856,7 @@ class PlayState extends MusicBeatState
 		// add(coolText);
 
 		FlxTween.tween(rating, {"scale.x": 0, "scale.y": 0, alpha: 0}, 0.2 / playbackRate, {ease: FlxEase.quadInOut,
-			startDelay: Conductor.crochet * 0.001 / playbackRate
+			startDelay: Conductor.crochet * 0.002 / playbackRate
 		});
 
 		FlxTween.tween(comboSpr, {"scale.x": 0, "scale.y": 0, alpha: 0}, 0.2 / playbackRate, {ease: FlxEase.quadInOut,
