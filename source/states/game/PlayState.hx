@@ -69,6 +69,7 @@ import states.menus.*;
 import states.substates.*;
 import util.*;
 import modchart.*;
+import shaders.ColorSwap;
 
 using StringTools;
 
@@ -174,10 +175,12 @@ class PlayState extends MusicBeatState
 	public var gfSpeed:Int = 1;
 	public var health:Float = 1;
 	public var combo:Int = 0;
+	var maxCombo:Int = 0;
 
 	private var healthBarBG:AttachedSprite;
 
 	public var healthBar:FlxBar;
+	public var sacorgBar:FlxSprite;
 
 	var songPercent:Float = 0;
 
@@ -227,6 +230,10 @@ class PlayState extends MusicBeatState
 	public static var seenCutscene:Bool = false;
 	public static var deathCounter:Int = 0;
 
+	//results screen vars
+	public static var endthefuckersong:Bool = false;
+	var seenResults:Bool = false;
+
 	public var defaultCamZoom:Float = 1.05;
 
 	// how big to stretch the pixel art assets
@@ -255,6 +262,12 @@ class PlayState extends MusicBeatState
 	var boyfriendIdleTime:Float = 0.0;
 	var boyfriendIdled:Bool = false;
 
+	//rating amounts
+	var sicksss:Int ;
+	var badsss:Int;
+	var goodsss:Int;
+	var shitsss:Int;
+	
 	public static var instance:PlayState;
 
 	// Debug buttons
@@ -637,6 +650,13 @@ class PlayState extends MusicBeatState
 		add(healthBar);
 		healthBarBG.sprTracker = healthBar;
 
+        sacorgBar = new FlxSprite().loadGraphic(Paths.image('sacorghealthbar'));
+		sacorgBar.y = FlxG.height * 0.87;
+		sacorgBar.visible = !ClientPrefs.hideHud;
+		sacorgBar.scale.set(0.97, 0.97);
+		sacorgBar.screenCenter(X);
+		add(sacorgBar);
+
 		iconP1 = new HealthIcon(boyfriend.healthIcon, true);
 		iconP1.y = healthBar.y - 75;
 		iconP1.visible = !ClientPrefs.hideHud;
@@ -672,6 +692,7 @@ class PlayState extends MusicBeatState
 		grpNoteSplashes.cameras = [camHUD];
 		notes.cameras = [camHUD];
 		healthBar.cameras = [camHUD];
+		sacorgBar.cameras = [camHUD];
 		healthBarBG.cameras = [camHUD];
 		iconP1.cameras = [camHUD];
 		iconP2.cameras = [camHUD];
@@ -1650,6 +1671,13 @@ class PlayState extends MusicBeatState
 
 	override public function update(elapsed:Float)
 	{
+		if(endthefuckersong){
+			endthefuckersong = false;
+			inCutscene = false;
+			seenResults = true;
+			endSong();
+		}
+
 		if (scripts != null)
 		{
 			scripts.update(elapsed);
@@ -1676,6 +1704,10 @@ class PlayState extends MusicBeatState
 			}
 		}
 
+        if(FlxG.keys.justPressed.F11)
+		{
+			FlxG.fullscreen = !FlxG.fullscreen;
+		}
 		super.update(elapsed);
 
 		if (botplayTxt.visible)
@@ -2524,6 +2556,13 @@ class PlayState extends MusicBeatState
 		}
 		playbackRate = 1;
 
+		if(!inCutscene && !seenResults){
+			inCutscene = true;
+			var raterer:String = ratingName;
+			if(ratingName == '?') raterer = 'erm';
+			openSubState(new ResultsSubstate(curSong, raterer, songScore, Math.floor(ratingPercent * 100), songMisses, sicksss + goodsss + badsss + shitsss, sicksss, goodsss, badsss, shitsss, maxCombo, cpuControlled, practiceMode));
+		}
+
 		if (chartingMode)
 		{
 			openChartEditor();
@@ -2612,7 +2651,7 @@ class PlayState extends MusicBeatState
 
 	public var totalPlayed:Int = 0;
 	public var totalNotesHit:Float = 0.0;
-	public var showCombo:Bool = false;
+	public var showCombo:Bool = true;
 	public var showComboNum:Bool = true;
 	public var showRating:Bool = true;
 
@@ -2700,6 +2739,7 @@ class PlayState extends MusicBeatState
 		rating.velocity.y -= FlxG.random.int(140, 175) * playbackRate;
 		rating.velocity.x -= FlxG.random.int(0, 10) * playbackRate;
 		rating.visible = (!ClientPrefs.hideHud && showRating);
+		rating.angle = FlxG.random.int(-15, 15);
 
 		var comboSpr:FlxSprite = new FlxSprite().loadGraphic(Paths.image(pixelShitPart1 + 'combo' + pixelShitPart2));
 		comboSpr.cameras = [camGame];
@@ -2797,10 +2837,11 @@ class PlayState extends MusicBeatState
 			if (showComboNum)
 				insert(members.indexOf(strumLineNotes), numScore);
 
-			FlxTween.tween(numScore, {alpha: 0}, 0.2 / playbackRate, {
+			FlxTween.tween(numScore, {"scale.x": 0, "scale.y": 0, alpha: 0}, 0.2 / playbackRate, {ease: FlxEase.quadInOut,
 				onComplete: function(tween:FlxTween)
 				{
-					numScore.destroy();
+					remove(numScore, true);
+					numScore.kill();
 				},
 				startDelay: Conductor.crochet * 0.002 / playbackRate
 			});
@@ -2814,16 +2855,19 @@ class PlayState extends MusicBeatState
 		coolText.text = Std.string(seperatedScore);
 		// add(coolText);
 
-		FlxTween.tween(rating, {alpha: 0}, 0.2 / playbackRate, {
+		FlxTween.tween(rating, {"scale.x": 0, "scale.y": 0, alpha: 0}, 0.2 / playbackRate, {ease: FlxEase.quadInOut,
 			startDelay: Conductor.crochet * 0.001 / playbackRate
 		});
 
-		FlxTween.tween(comboSpr, {alpha: 0}, 0.2 / playbackRate, {
+		FlxTween.tween(comboSpr, {"scale.x": 0, "scale.y": 0, alpha: 0}, 0.2 / playbackRate, {ease: FlxEase.quadInOut,
 			onComplete: function(tween:FlxTween)
 			{
+				remove(coolText, true);
 				coolText.destroy();
+				remove(comboSpr, true);
 				comboSpr.destroy();
 
+				remove(rating, true);
 				rating.destroy();
 			},
 			startDelay: Conductor.crochet * 0.002 / playbackRate

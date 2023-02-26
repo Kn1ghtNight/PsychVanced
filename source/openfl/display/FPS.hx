@@ -6,6 +6,8 @@ import openfl.filters.ShaderFilter;
 import openfl.system.System;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
+import flixel.FlxState;
+import song.Conductor;
 
 class FPS extends TextField
 {
@@ -75,8 +77,12 @@ class FPS extends TextField
 			peak = mem;
 
 		text += "MEM: " + getSizeLabel(System.totalMemory) + "\n";
-
 		text += "MEM Peak: " + getSizeLabel(peak) + "\n";
+		text += 'Current BPM: ${Conductor.bpm}' + "\n";
+        text += 'Current state: ${Type.getClassName(Type.getClass(FlxG.state))}' + "\n";
+		text += 'Nb Cameras: ${FlxG.cameras.list.length}' + "\n";
+		text += 'System: ${lime.system.System.platformLabel} ${lime.system.System.platformVersion}' + "\n";
+        text += 'Objs in State: ${FlxG.state.members.length}' + "\n";
 	}
 
 	final dataTexts = ["B", "KB", "MB", "GB", "TB", "PB"];
