@@ -99,6 +99,8 @@ class Main extends Sprite
 		}
 		#end
 
+		WindowsAPI.setDarkMode(true);
+
 		#if html5
 		FlxG.autoPause = false;
 		FlxG.mouse.visible = false;

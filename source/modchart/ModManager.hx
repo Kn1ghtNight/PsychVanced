@@ -19,7 +19,7 @@ import util.CoolUtil;
 class ModManager {
 	public function registerDefaultModifiers()
 	{
-		var quickRegs:Array<Any> = [FlipModifier, ReverseModifier, InvertModifier, DrunkModifier, BeatModifier, AlphaModifier, ScaleModifier, ConfusionModifier, OpponentModifier, TransformModifier, InfinitePathModifier, PerspectiveModifier];
+		var quickRegs:Array<Any> = [FlipModifier, ReverseModifier, InvertModifier, DrunkModifier, BeatModifier, AlphaModifier, ScaleModifier, ConfusionModifier, OpponentModifier, TransformModifier, PerspectiveModifier];
 		for (mod in quickRegs)
 			quickRegister(Type.createInstance(mod, [this]));
 
