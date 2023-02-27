@@ -1,10 +1,10 @@
-# Friday Night Funkin' - PsychVanced
+# Friday Night Funkin' - PsychVanced LEGACY
 
 It's Psych! But with some neat lil' things!
 
-![](https://cdn.discordapp.com/attachments/996021377180115054/1079082454184382495/psychvanced_logo.png)
+![](https://cdn.discordapp.com/attachments/979775098112331867/1079531038394556617/its_outdated_now_go_to_the_new_repo.png)
 
-### NOTE: THIS ISNT MEANT TO BE A REPLACEMENT FOR PSYCH, ITS JUST A LITTLE PROJECT IM DOIN FOR FUN
+### NOTE: THIS IS OUTDATED PLEASE GO TO [THE GOOD ONE](https://github.com/Kn1ghtNight/PsychVancedRewrite)
 ## Features
 * Andromeda Modcharting API
 * Internal Resolution Bumped to 1080p instead of 720p
